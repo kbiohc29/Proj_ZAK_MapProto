@@ -81,7 +81,13 @@ Shader "ZAK/BuildingUnlit"
                 float dist = distance(_WorldSpaceCameraPos, i.worldPos);
                 float boost = 1.0 + saturate((dist - 2000.0) / 6000.0) * 2.0;
 
-                float3 winGlow = float3(1.0, 0.78, 0.42) * lit * flicker * 5.0 * boost;
+                // 뷰폭별 감쇠 (Keb 스펙): 뷰폭 10km 이하 -60%, 15km -50%, 20km -40%, 25km -30%, 그 이상 원래대로
+                // (뷰폭 ≈ 카메라높이 / 0.76 이라 높이 기준으로 환산)
+                float camH = _WorldSpaceCameraPos.y;
+                float att = lerp(0.55, 0.7, saturate((camH - 7600.0) / 11400.0));
+                att = lerp(att, 1.0, saturate((camH - 19000.0) / 8000.0));
+
+                float3 winGlow = float3(1.0, 0.78, 0.42) * lit * flicker * 5.0 * boost * att;
 
                 // ---- 밤: 옥상 점광 (유인 건물 한정) ----
                 float2 ruv = i.worldPos.xz / 4.0;
@@ -90,15 +96,14 @@ Shader "ZAK/BuildingUnlit"
                 float roofDot = step(length(rf), 0.16)
                               * step(hash21(rcell), 0.10)
                               * buildingLit * isRoof;
-                float3 roofGlow = float3(1.0, 0.6, 0.3) * roofDot * 4.0 * boost;
+                float3 roofGlow = float3(1.0, 0.6, 0.3) * roofDot * 4.0 * boost * att;
 
-                // 근거리 밤: 어둠 속 창문
-                float3 nightNear = baseCol * 0.05 + winGlow * win + roofGlow;
+                // 근거리 밤: 어둠 속 창문 (건물 몸체는 도로 수준으로 어둡게)
+                float3 nightNear = baseCol * 0.02 + winGlow * win + roofGlow;
 
                 // ---- 원거리 LOD: 표면 발광 대신 '점광' ----
                 // LOD 기준을 픽셀 거리가 아닌 '카메라 높이'로: 팬 중에는 격자가 고정되고
                 // 줌할 때만 셀 크기가 바뀐다 (점이 화면 따라 미끄러지는 현상 제거)
-                float camH = _WorldSpaceCameraPos.y;
                 float farT = saturate((camH - 3000.0) / 4000.0);
                 float cellSz = lerp(6.0, 70.0, farT);
                 float2 fuv = i.worldPos.xz / cellSz;
@@ -109,10 +114,10 @@ Shader "ZAK/BuildingUnlit"
                 // 점 크기: 멀수록 살짝 키워서 블룸이 잡을 픽셀 확보
                 float fDot = step(length(ff), lerp(0.16, 0.26, farT)) * fHas;
                 // 블룸 강화: 원거리에서 최대 10 HDR
-                float3 farDotGlow = float3(1.0, 0.75, 0.42) * fDot * (3.5 + farT * 6.5);
+                float3 farDotGlow = float3(1.0, 0.75, 0.42) * fDot * (3.5 + farT * 6.5) * att;
 
                 // 벽 가중: 지붕 한가운데보다 건물 외곽(벽면)의 점이 더 밝게
-                float3 nightFar = baseCol * 0.04 + farDotGlow * (1.0 - 0.4 * isRoof);
+                float3 nightFar = baseCol * 0.02 + farDotGlow * (1.0 - 0.4 * isRoof);
 
                 float3 nightCol = lerp(nightNear, nightFar, farT);
 
