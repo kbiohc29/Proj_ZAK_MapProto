@@ -3,17 +3,23 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// M3: 근접 줌(뷰 폭 1km 미만)에서 건물을 클릭하면
-/// 층별 상점 목록 팝업이 뜨고, 상점을 '수색'해 아이템을 얻는다.
-/// - 상점당 1회 수색 (플레이 세션 기준)
-/// - UI는 프로토용 OnGUI — 에디터 세팅 불필요
-/// - 아이템 테이블은 ItemTable 클래스 상단에서 수정
+/// v2 변경점 (M5):
+/// - 인벤토리/스태미너를 GameState로 이관 (루프 전체와 공유)
+/// - 수색 비용: 스태미너 -5
+/// - 소음 시스템: 수색마다 소음 +15, 소음이 높을수록 감염체 조우 확률 상승
+///   조우 시 강행 돌파로 스태미너 -30 (TODO: 추후 전투 씬 연결 지점)
+/// - SignalManager가 호출할 수 있는 public Open(building) 추가
 /// </summary>
 public class BuildingLootUI : MonoBehaviour
 {
     public ShopMapRenderer shopData;
-    public float clickRadius = 200f;        // 클릭 지점에서 건물 탐색 반경(m)
-    public float maxViewWidthForLoot = 1000f; // 이 줌보다 가까울 때만 클릭 동작 (2단계 이하)
+    public float clickRadius = 40f;
+    public float maxViewWidthForLoot = 1000f;
+
+    [Header("M5 Loop")]
+    public int searchStaminaCost = 5;
+    public float noisePerSearch = 15f;
+    public float noiseDecayPerSec = 2f;   // 가만히 있으면 소음이 식는다
 
     Camera cam;
     Vector3 mouseDownPos;
@@ -21,9 +27,7 @@ public class BuildingLootUI : MonoBehaviour
     Vector2 scroll;
     string lastLootMsg = "";
 
-    readonly Dictionary<string, int> inventory = new();
-    readonly HashSet<string> looted = new(); // buildingKey#shopIndex
-
+    readonly HashSet<string> looted = new();
     Rect windowRect = new Rect(0, 0, 380, 520);
 
     void Start()
@@ -34,29 +38,33 @@ public class BuildingLootUI : MonoBehaviour
         windowRect.y = 60;
     }
 
+    /// <summary>외부(SignalManager)에서 건물 수색창을 연다</summary>
+    public void Open(ShopMapRenderer.Building b)
+    {
+        selected = b;
+        scroll = Vector2.zero;
+        lastLootMsg = "도착했다. 조용히 수색하자...";
+    }
+
+    public bool IsOpen => selected != null;
+
     void Update()
     {
+        // 소음 자연 감소
+        GameState.noise = Mathf.Max(0f, GameState.noise - noiseDecayPerSec * Time.deltaTime);
+
         if (shopData == null) return;
 
         if (Input.GetMouseButtonDown(0)) mouseDownPos = Input.mousePosition;
         if (!Input.GetMouseButtonUp(0)) return;
-        if ((Input.mousePosition - mouseDownPos).magnitude > 6f) return; // 드래그
+        if ((Input.mousePosition - mouseDownPos).magnitude > 6f) return;
 
-        // 팝업 위 클릭은 UI가 처리
         if (selected != null && windowRect.Contains(GuiMouse())) return;
-
-        // 근접 줌에서만 동작
         if (CurrentViewWidth() > maxViewWidthForLoot) return;
 
         Vector3 world = ScreenToGround(Input.mousePosition);
         var b = shopData.NearestBuilding(world, clickRadius);
-        Debug.Log($"클릭 {world}, 뷰폭 {CurrentViewWidth():F0}m, 건물DB {shopData.Buildings.Count}, 결과 {(b == null ? "없음" : b.title)}");
-        if (b != null)
-        {
-            selected = b;
-            scroll = Vector2.zero;
-            lastLootMsg = "";
-        }
+        if (b != null) Open(b);
     }
 
     float CurrentViewWidth()
@@ -74,6 +82,38 @@ public class BuildingLootUI : MonoBehaviour
 
     Vector2 GuiMouse() => new(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
 
+    // ---------- 수색 ----------
+
+    void Search(ShopMapRenderer.ShopRecord shop, string lootKey)
+    {
+        if (GameState.stamina < searchStaminaCost)
+        {
+            lastLootMsg = "너무 지쳤다... 수색할 힘이 없다";
+            return;
+        }
+        GameState.stamina -= searchStaminaCost;
+        GameState.noise += noisePerSearch;
+
+        // 소음 기반 조우 판정 (소음 100 = 50% 확률)
+        if (Random.value < GameState.noise / 200f)
+        {
+            // TODO: 여기서 전투 씬(BattleProto)으로 전환하는 게 최종 그림.
+            //       지금은 강행 돌파로 축약.
+            GameState.stamina = Mathf.Max(0, GameState.stamina - 30);
+            GameState.noise = Mathf.Max(0f, GameState.noise - 40f);
+            lastLootMsg = "!! 감염체가 소리를 들었다 — 강행 돌파했다 (스태미너 -30)";
+            return; // 이번 수색은 무산
+        }
+
+        var items = ItemTable.Roll(shop.category);
+        foreach (var it in items)
+            GameState.inventory[it] = GameState.inventory.TryGetValue(it, out int n) ? n + 1 : 1;
+        looted.Add(lootKey);
+        lastLootMsg = items.Count > 0
+            ? $"{shop.name}: {string.Join(", ", items)} 획득"
+            : $"{shop.name}: 아무것도 없다...";
+    }
+
     // ---------- UI ----------
 
     void OnGUI()
@@ -85,11 +125,10 @@ public class BuildingLootUI : MonoBehaviour
 
     void DrawBuildingWindow(int id)
     {
-        GUILayout.Label($"업소 {selected.shops.Count}개", Small());
+        GUILayout.Label($"업소 {selected.shops.Count}개 · 수색당 스태미너 -{searchStaminaCost}, 소음 +{noisePerSearch:F0}", Small());
 
-        scroll = GUILayout.BeginScrollView(scroll, GUILayout.Height(380));
+        scroll = GUILayout.BeginScrollView(scroll, GUILayout.Height(370));
 
-        // 층별 그룹: 지하 → 저층 → 고층 순
         var groups = selected.shops
             .Select((s, i) => (shop: s, idx: i))
             .GroupBy(x => x.shop.floor)
@@ -109,19 +148,10 @@ public class BuildingLootUI : MonoBehaviour
 
                 string lootKey = $"{selected.key}#{idx}";
                 if (looted.Contains(lootKey))
-                {
                     GUILayout.Label("수색 완료", Small(), GUILayout.Width(80));
-                }
                 else if (GUILayout.Button("수색", GUILayout.Width(80), GUILayout.Height(34)))
-                {
-                    var items = ItemTable.Roll(shop.category);
-                    foreach (var it in items)
-                        inventory[it] = inventory.TryGetValue(it, out int n) ? n + 1 : 1;
-                    looted.Add(lootKey);
-                    lastLootMsg = items.Count > 0
-                        ? $"{shop.name}: {string.Join(", ", items)} 획득!"
-                        : $"{shop.name}: 아무것도 없다...";
-                }
+                    Search(shop, lootKey);
+
                 GUILayout.EndHorizontal();
             }
         }
@@ -136,37 +166,32 @@ public class BuildingLootUI : MonoBehaviour
 
     void DrawInventory()
     {
-        if (inventory.Count == 0) return;
-        GUILayout.BeginArea(new Rect(12, Screen.height - 160, 300, 150), GUI.skin.box);
+        if (GameState.inventory.Count == 0) return;
+        GUILayout.BeginArea(new Rect(12, Screen.height - 170, 300, 160), GUI.skin.box);
         GUILayout.Label("가방", Bold());
-        foreach (var kv in inventory.OrderByDescending(k => k.Value).Take(6))
+        foreach (var kv in GameState.inventory.OrderByDescending(k => k.Value).Take(6))
             GUILayout.Label($"{kv.Key} × {kv.Value}", Small());
         GUILayout.EndArea();
     }
 
     static int FloorOrder(string f)
     {
-        if (string.IsNullOrEmpty(f)) return 999;      // 층 미상은 맨 뒤
+        if (string.IsNullOrEmpty(f)) return 999;
         bool basement = f.Contains("지하") || f.StartsWith("B") || f.StartsWith("b") || f.StartsWith("-");
         string digits = new string(f.Where(char.IsDigit).ToArray());
         int n = int.TryParse(digits, out int v) ? v : 0;
         return basement ? -n : n;
     }
 
-    // ---- 스타일 캐시 ----
     static GUIStyle _small, _bold, _rich;
     static GUIStyle Small() => _small ??= new GUIStyle(GUI.skin.label) { fontSize = 11 };
     static GUIStyle Bold()  => _bold  ??= new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold };
     static GUIStyle Rich()  => _rich  ??= new GUIStyle(GUI.skin.label) { fontSize = 12, richText = true };
 }
 
-/// <summary>
-/// 업종 → 아이템 풀. 소분류명 키워드 부분일치, 위에서부터 우선 적용.
-/// 밸런싱은 여기만 고치면 됨 (클로드 코드에 맡기기 좋은 부분).
-/// </summary>
+/// <summary>업종 → 아이템 풀. 소분류명 키워드 부분일치, 위에서부터 우선 적용.</summary>
 public static class ItemTable
 {
-    // (업종 키워드들, (아이템, 가중치)들)
     static readonly (string[] keys, (string item, int w)[] pool)[] Tables =
     {
         (new[]{"편의점","슈퍼","마트"},
@@ -208,15 +233,14 @@ public static class ItemTable
             }
         }
 
-        int count = Random.Range(1, 4); // 1~3개
+        int count = Random.Range(1, 4);
         var result = new List<string>(count);
         int total = 0;
         foreach (var (_, w) in pool) total += w;
 
         for (int i = 0; i < count; i++)
         {
-            // 20% 확률로 꽝 (빈손의 긴장감)
-            if (Random.value < 0.2f) continue;
+            if (Random.value < 0.2f) continue; // 꽝
 
             int r = Random.Range(0, total);
             foreach (var (item, w) in pool)
