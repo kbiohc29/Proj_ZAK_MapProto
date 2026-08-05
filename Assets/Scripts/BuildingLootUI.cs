@@ -3,12 +3,8 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// v2 변경점 (M5):
-/// - 인벤토리/스태미너를 GameState로 이관 (루프 전체와 공유)
-/// - 수색 비용: 스태미너 -5
-/// - 소음 시스템: 수색마다 소음 +15, 소음이 높을수록 감염체 조우 확률 상승
-///   조우 시 강행 돌파로 스태미너 -30 (TODO: 추후 전투 씬 연결 지점)
-/// - SignalManager가 호출할 수 있는 public Open(building) 추가
+/// 건물 클릭 → 층별 상점 팝업 → 수색해 아이템 획득.
+/// 인벤토리/스태미너는 GameState로 이관 (루프 전체와 공유). 수색 비용: 스태미너 -5
 /// </summary>
 public class BuildingLootUI : MonoBehaviour
 {
@@ -16,10 +12,7 @@ public class BuildingLootUI : MonoBehaviour
     public float clickRadius = 40f;
     public float maxViewWidthForLoot = 1000f;
 
-    [Header("M5 Loop")]
     public int searchStaminaCost = 5;
-    public float noisePerSearch = 15f;
-    public float noiseDecayPerSec = 2f;   // 가만히 있으면 소음이 식는다
 
     Camera cam;
     Vector3 mouseDownPos;
@@ -50,9 +43,6 @@ public class BuildingLootUI : MonoBehaviour
 
     void Update()
     {
-        // 소음 자연 감소
-        GameState.noise = Mathf.Max(0f, GameState.noise - noiseDecayPerSec * Time.deltaTime);
-
         if (shopData == null) return;
 
         if (Input.GetMouseButtonDown(0)) mouseDownPos = Input.mousePosition;
@@ -92,18 +82,6 @@ public class BuildingLootUI : MonoBehaviour
             return;
         }
         GameState.stamina -= searchStaminaCost;
-        GameState.noise += noisePerSearch;
-
-        // 소음 기반 조우 판정 (소음 100 = 50% 확률)
-        if (Random.value < GameState.noise / 200f)
-        {
-            // TODO: 여기서 전투 씬(BattleProto)으로 전환하는 게 최종 그림.
-            //       지금은 강행 돌파로 축약.
-            GameState.stamina = Mathf.Max(0, GameState.stamina - 30);
-            GameState.noise = Mathf.Max(0f, GameState.noise - 40f);
-            lastLootMsg = "!! 감염체가 소리를 들었다 — 강행 돌파했다 (스태미너 -30)";
-            return; // 이번 수색은 무산
-        }
 
         var items = ItemTable.Roll(shop.category);
         foreach (var it in items)
@@ -125,7 +103,7 @@ public class BuildingLootUI : MonoBehaviour
 
     void DrawBuildingWindow(int id)
     {
-        GUILayout.Label($"업소 {selected.shops.Count}개 · 수색당 스태미너 -{searchStaminaCost}, 소음 +{noisePerSearch:F0}", Small());
+        GUILayout.Label($"업소 {selected.shops.Count}개 · 수색당 스태미너 -{searchStaminaCost}", Small());
 
         scroll = GUILayout.BeginScrollView(scroll, GUILayout.Height(370));
 
