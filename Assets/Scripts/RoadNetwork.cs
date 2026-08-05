@@ -21,7 +21,7 @@ public class RoadNetwork : MonoBehaviour
     public float roadWidth = 6f;          // 도로 라인 폭(m)
     public float chunkSize = 2000f;
     public Color roadColor = new Color(0.30f, 0.30f, 0.34f);
-    public Color nightRoadColor = new Color(0.03f, 0.035f, 0.05f);
+    public Color nightRoadColor = new Color(0.09f, 0.10f, 0.13f);
 
     Material sharedRoadMat;
 
