@@ -21,6 +21,9 @@ public class RoadNetwork : MonoBehaviour
     public float roadWidth = 6f;          // 도로 라인 폭(m)
     public float chunkSize = 2000f;
     public Color roadColor = new Color(0.30f, 0.30f, 0.34f);
+    public Color nightRoadColor = new Color(0.03f, 0.035f, 0.05f);
+
+    Material sharedRoadMat;
 
     // ---- 그래프 ----
     public Dictionary<long, Vector3> NodePos = new();
@@ -61,8 +64,16 @@ public class RoadNetwork : MonoBehaviour
         Ready = true;
     }
 
+    void Update()
+    {
+        if (sharedRoadMat == null) return;
+        float night = Shader.GetGlobalFloat("_ZakNight");
+        sharedRoadMat.color = Color.Lerp(roadColor, nightRoadColor, night);
+    }
+
     void BuildGraphAndMesh(OverpassRoot root)
     {
+        sharedRoadMat = new Material(Shader.Find("Sprites/Default")) { color = roadColor };
         var chunks = new Dictionary<Vector2Int, (List<Vector3> v, List<Color> c, List<int> t)>();
 
         foreach (var el in root.elements)
@@ -156,7 +167,7 @@ public class RoadNetwork : MonoBehaviour
         buf.v.Add(a + side + Vector3.down * 0.5f);
         buf.v.Add(b + side + Vector3.down * 0.5f);
         buf.v.Add(b - side + Vector3.down * 0.5f);
-        for (int i = 0; i < 4; i++) buf.c.Add(roadColor);
+        for (int i = 0; i < 4; i++) buf.c.Add(Color.white); // 실제 색은 sharedRoadMat이 담당
         buf.t.Add(s); buf.t.Add(s + 1); buf.t.Add(s + 2);
         buf.t.Add(s); buf.t.Add(s + 2); buf.t.Add(s + 3);
     }
@@ -173,7 +184,7 @@ public class RoadNetwork : MonoBehaviour
         go.transform.SetParent(transform, false);
         go.AddComponent<MeshFilter>().sharedMesh = mesh;
         var mr = go.AddComponent<MeshRenderer>();
-        mr.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+        mr.sharedMaterial = sharedRoadMat;
         mr.shadowCastingMode = ShadowCastingMode.Off;
         mr.receiveShadows = false;
     }
