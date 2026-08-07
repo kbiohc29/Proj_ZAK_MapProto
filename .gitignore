@@ -41,3 +41,6 @@ crashlytics-build.properties
 # 대용량 원본 데이터 (재다운로드 가능 — data.go.kr)
 Assets/StreamingAssets/*.csv
 Assets/StreamingAssets/*.geojson
+
+# GitHub 100MB 제한 초과 (재생성 가능한 변환 산출물)
+Assets/StreamingAssets/busan_buildings.json

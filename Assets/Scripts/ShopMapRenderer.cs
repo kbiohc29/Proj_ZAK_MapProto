@@ -19,6 +19,13 @@ public class ShopMapRenderer : MonoBehaviour
     public float pointSize = 8f;
     public float chunkSize = 2000f;
 
+    [Header("Visibility")]
+    [Tooltip("끄면 상가 점을 아예 그리지 않는다 (건물이 모두 있는 상태에선 불필요). 루팅/정보 데이터는 그대로 유지")]
+    public bool renderDots = false;
+
+    [Tooltip("뷰 폭이 이 값보다 좁아지면 상가 점을 숨긴다 (근접 줌에선 건물/캐릭터 가독성 우선)")]
+    public float hideBelowViewWidth = 2500f;
+
     // ---- M3: 건물/업소 데이터 ----
     public class ShopRecord
     {
@@ -58,6 +65,24 @@ public class ShopMapRenderer : MonoBehaviour
     static readonly Color DefaultColor = new Color(0.8f, 0.8f, 0.8f);
 
     public int LoadedCount { get; private set; }
+
+    readonly System.Collections.Generic.List<MeshRenderer> chunkRenderers = new();
+    Camera cam;
+    bool dotsVisible = true;
+
+    void Update()
+    {
+        if (cam == null) cam = Camera.main;
+        if (cam == null || chunkRenderers.Count == 0) return;
+
+        float hFov = Camera.VerticalToHorizontalFieldOfView(cam.fieldOfView, cam.aspect) * Mathf.Deg2Rad;
+        float viewWidth = 2f * cam.transform.position.y * Mathf.Tan(hFov * 0.5f);
+
+        bool shouldShow = viewWidth >= hideBelowViewWidth;
+        if (shouldShow == dotsVisible) return;
+        dotsVisible = shouldShow;
+        foreach (var r in chunkRenderers) if (r != null) r.enabled = shouldShow;
+    }
 
     void Start()
     {
@@ -168,7 +193,7 @@ public class ShopMapRenderer : MonoBehaviour
                 buf = (new List<Vector3>(4096), new List<Color>(4096), new List<int>(8192));
                 chunks[key] = buf;
             }
-            AddQuad(buf.v, buf.c, buf.t, pos, pointSize * 0.5f, col);
+            if (renderDots) AddQuad(buf.v, buf.c, buf.t, pos, pointSize * 0.5f, col);
 
             // ---- M3: 건물 레지스트리 ----
             RegisterShop(fields, pos, nameCol, subCatCol, catCol, floorCol, bldgKeyCol, bldgNameCol, addrCol);
@@ -185,7 +210,8 @@ public class ShopMapRenderer : MonoBehaviour
             list.Add(b);
         }
 
-        foreach (var kv in chunks) CreateChunkObject(kv.Key, kv.Value);
+        if (renderDots)
+            foreach (var kv in chunks) CreateChunkObject(kv.Key, kv.Value);
         LoadedCount = count;
         Debug.Log($"상가업소 {count:N0}개 로드, 건물 {Buildings.Count:N0}동 등록 (스킵 {skipped:N0}행)");
     }
@@ -195,8 +221,9 @@ public class ShopMapRenderer : MonoBehaviour
     {
         string Get(int col) => (col >= 0 && col < f.Count) ? f[col].Trim() : "";
 
-        // 프로토: 좌표 15m 격자로 건물 그룹화 (건물관리번호 컬럼 신뢰도가 낮음)
-        string bKey = $"@{Mathf.RoundToInt(pos.x / 15f)}_{Mathf.RoundToInt(pos.z / 15f)}";
+        string bKey = Get(bldgKeyCol);
+        if (string.IsNullOrEmpty(bKey))
+            bKey = $"@{Mathf.RoundToInt(pos.x / 10f)}_{Mathf.RoundToInt(pos.z / 10f)}"; // 10m 격자 폴백
 
         if (!Buildings.TryGetValue(bKey, out var b))
         {
@@ -221,9 +248,8 @@ public class ShopMapRenderer : MonoBehaviour
         Building best = null;
         float bestD = maxDist * maxDist;
 
-        int r = Mathf.CeilToInt(maxDist / BGridCell);
-        for (int dx = -r; dx <= r; dx++)
-        for (int dy = -r; dy <= r; dy++)
+        for (int dx = -1; dx <= 1; dx++)
+        for (int dy = -1; dy <= 1; dy++)
         {
             if (!bGrid.TryGetValue(new Vector2Int(center.x + dx, center.y + dy), out var list))
                 continue;
@@ -234,6 +260,24 @@ public class ShopMapRenderer : MonoBehaviour
             }
         }
         return best;
+    }
+
+    /// <summary>반경 내 상가 클러스터 전부 반환 (큰 건물은 여러 클러스터로 쪼개져 있음)</summary>
+    public List<Building> BuildingsInRadius(Vector3 pos, float radius)
+    {
+        var result = new List<Building>();
+        int r = Mathf.CeilToInt(radius / BGridCell);
+        var center = new Vector2Int(Mathf.FloorToInt(pos.x / BGridCell), Mathf.FloorToInt(pos.z / BGridCell));
+        float r2 = radius * radius;
+
+        for (int dx = -r; dx <= r; dx++)
+        for (int dy = -r; dy <= r; dy++)
+        {
+            if (!bGrid.TryGetValue(new Vector2Int(center.x + dx, center.y + dy), out var list)) continue;
+            foreach (var b in list)
+                if ((b.pos - pos).sqrMagnitude <= r2) result.Add(b);
+        }
+        return result;
     }
 
     static Color ColorFor(string categoryName)
@@ -271,6 +315,7 @@ public class ShopMapRenderer : MonoBehaviour
         mr.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
         mr.shadowCastingMode = ShadowCastingMode.Off;
         mr.receiveShadows = false;
+        chunkRenderers.Add(mr);
     }
 
     static List<string> ParseCsvLine(string line)

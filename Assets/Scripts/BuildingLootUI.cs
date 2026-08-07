@@ -3,8 +3,10 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// 건물 클릭 → 층별 상점 팝업 → 수색해 아이템 획득.
-/// 인벤토리/스태미너는 GameState로 이관 (루프 전체와 공유). 수색 비용: 스태미너 -5
+/// v3:
+/// - 인벤토리/스태미너는 GameState 공유
+/// - 수색 비용: 스태미너만 소모 (소음 시스템은 기획에서 폐기됨)
+/// - 외부에서 열 수 있는 public Open(building)
 /// </summary>
 public class BuildingLootUI : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class BuildingLootUI : MonoBehaviour
     public float clickRadius = 40f;
     public float maxViewWidthForLoot = 1000f;
 
+    [Header("Loop")]
     public int searchStaminaCost = 5;
 
     Camera cam;
@@ -44,12 +47,12 @@ public class BuildingLootUI : MonoBehaviour
     void Update()
     {
         if (shopData == null) return;
+        if (UIState.PointerOverUI) return;
 
         if (Input.GetMouseButtonDown(0)) mouseDownPos = Input.mousePosition;
         if (!Input.GetMouseButtonUp(0)) return;
         if ((Input.mousePosition - mouseDownPos).magnitude > 6f) return;
 
-        if (selected != null && windowRect.Contains(GuiMouse())) return;
         if (CurrentViewWidth() > maxViewWidthForLoot) return;
 
         Vector3 world = ScreenToGround(Input.mousePosition);
@@ -98,7 +101,10 @@ public class BuildingLootUI : MonoBehaviour
     {
         DrawInventory();
         if (selected != null)
+        {
             windowRect = GUI.Window(7001, windowRect, DrawBuildingWindow, selected.title);
+            UIState.Register(windowRect);
+        }
     }
 
     void DrawBuildingWindow(int id)

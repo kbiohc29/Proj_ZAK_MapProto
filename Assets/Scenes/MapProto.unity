@@ -151,6 +151,8 @@ MonoBehaviour:
   fileName: busan_shops.csv
   pointSize: 8
   chunkSize: 2000
+  renderDots: 0
+  hideBelowViewWidth: 2500
 --- !u!4 &341400325
 Transform:
   m_ObjectHideFlags: 0
@@ -158,6 +160,63 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 341400323}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &388965054
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 388965056}
+  - component: {fileID: 388965055}
+  m_Layer: 0
+  m_Name: ZombieFlow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &388965055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388965054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6aa75e5dbe563447a2794b545e94798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkGrid: {fileID: 0}
+  coarseFactor: 5
+  initialHordes: 14
+  hordeSize: 260
+  tickInterval: 0.5
+  flowRate: 0.35
+  spawnRadius: 4000
+  survivorCount: 5
+  retargetInterval: 25
+  dotSize: 6
+  dotsPerZombie: 1
+  maxDots: 24000
+  zombieColor: {r: 0.55, g: 0.15, b: 0.18, a: 1}
+--- !u!4 &388965056
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388965054}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -199,7 +258,9 @@ MonoBehaviour:
   roadWidth: 6
   chunkSize: 2000
   roadColor: {r: 0.3, g: 0.3, b: 0.34, a: 1}
-  nightRoadColor: {r: 0.03, g: 0.035, b: 0.05, a: 1}
+  casingColor: {r: 0.2, g: 0.2, b: 0.22, a: 1}
+  casingExtra: 4
+  nightDarken: 0.72
 --- !u!4 &413882008
 Transform:
   m_ObjectHideFlags: 0
@@ -207,6 +268,115 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413882006}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &864039890
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 864039892}
+  - component: {fileID: 864039891}
+  m_Layer: 0
+  m_Name: TerrainRenderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &864039891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864039890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9f871e4c96997f46a62fc1f0bebbe5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fileName: busan_terrain.json
+  waterColor: {r: 0.07, g: 0.13, b: 0.2, a: 1}
+  forestColor: {r: 0.1, g: 0.16, b: 0.12, a: 1}
+  parkColor: {r: 0.13, g: 0.2, b: 0.14, a: 1}
+  coastlineColor: {r: 0.2, g: 0.3, b: 0.38, a: 1}
+  coastlineWidth: 14
+  riverWidth: 26
+  colorJitter: 0.12
+  nightDarken: 0.75
+--- !u!4 &864039892
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864039890}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &925681961
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 925681963}
+  - component: {fileID: 925681962}
+  m_Layer: 0
+  m_Name: NightLightTuner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &925681962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 925681961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6532245022004644486a209ef934ad66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  show: 1
+  toggleKey: 282
+  glowNear: 6
+  glowFar: 1.28
+  dotSize: 1.54
+  attNear: 0.4
+  attFar: 0.32
+  colorSaturation: 1.05
+  intensityVariance: 0.72
+  litRatio: 0.11
+  windowLitRatio: 0.64
+  densityInfluence: 0.8
+--- !u!4 &925681963
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 925681961}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -248,8 +418,6 @@ MonoBehaviour:
   clickRadius: 50
   maxViewWidthForLoot: 1000
   searchStaminaCost: 5
-  noisePerSearch: 15
-  noiseDecayPerSec: 2
 --- !u!4 &1140453618
 Transform:
   m_ObjectHideFlags: 0
@@ -265,6 +433,112 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1191541895
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1191541897}
+  - component: {fileID: 1191541896}
+  m_Layer: 0
+  m_Name: PlayerCharacter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1191541896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191541895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25981082c05f87b44a643bd2e61297a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flow: {fileID: 0}
+  roads: {fileID: 0}
+  walkGrid: {fileID: 0}
+  shopData: {fileID: 0}
+  lootUI: {fileID: 0}
+  moveSpeed: 45
+  arriveThreshold: 4
+  offRoadReach: 120
+  maxHealth: 100000
+  dangerRadius: 90
+  damagePerZombiePerSec: 0.02
+  safeThreshold: 3
+  lootRange: 60
+  autoLootOnArrive: 1
+--- !u!4 &1191541897
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191541895}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1567645442
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1567645443}
+  - component: {fileID: 1567645444}
+  m_Layer: 0
+  m_Name: WalkGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1567645443
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567645442}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1567645444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567645442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db90f09439df8bd4aabf222a366c33d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cellSize: 4
+  inflate: 1
+  margin: 500
+  maxExpansions: 120000
 --- !u!1 &1597290901
 GameObject:
   m_ObjectHideFlags: 0
@@ -378,6 +652,13 @@ MonoBehaviour:
   keyZoomPerSec: 1.2
   smoothTime: 0.12
   keyPanScreenFraction: 0.7
+  tiltStartHeight: 1200
+  tiltFullHeight: 250
+  minPitch: 78
+  tiltSmooth: 5
+  followPlayer: 1
+  followSmooth: 6
+  recenterSmooth: 8
 --- !u!114 &1597290906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,6 +719,61 @@ MonoBehaviour:
   m_BeforeTransparentBundles: []
   m_BeforeStackBundles: []
   m_AfterStackBundles: []
+--- !u!1 &1663835641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1663835643}
+  - component: {fileID: 1663835642}
+  m_Layer: 0
+  m_Name: SeaRenderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1663835642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1663835641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 829b9957cbded2145a7a375c17745f64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roads: {fileID: 0}
+  terrain: {fileID: 0}
+  cellSize: 25
+  dilate: 2
+  excludeBridges: 1
+  includeBuildings: 1
+  margin: 3000
+  seaColor: {r: 0.05, g: 0.1, b: 0.16, a: 1}
+  landColor: {r: 0.16, g: 0.16, b: 0.15, a: 1}
+  seaExtent: 200000
+  nightDarken: 0.65
+--- !u!4 &1663835643
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1663835641}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1788280876
 GameObject:
   m_ObjectHideFlags: 0
@@ -481,7 +817,58 @@ Transform:
   m_GameObject: {fileID: 1788280876}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1603.4396, y: 539.43085, z: -4607.84}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1853442413
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1853442415}
+  - component: {fileID: 1853442414}
+  m_Layer: 0
+  m_Name: ObjectInspector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1853442414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853442413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c381aaf375926da47838ae74adada17d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildingData: {fileID: 0}
+  shopData: {fileID: 0}
+  player: {fileID: 0}
+  lootUI: {fileID: 0}
+  fallbackRadius: 12
+  maxViewWidthForInfo: 2000
+  debugLog: 1
+--- !u!4 &1853442415
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853442413}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -584,6 +971,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1944236804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1944236806}
+  - component: {fileID: 1944236805}
+  m_Layer: 0
+  m_Name: CommercialDensity
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1944236805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944236804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46c4b7fb39940ec4c8a04a263dfa7083, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resolution: 512
+  blurPasses: 3
+  saturationCount: 40
+--- !u!4 &1944236806
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944236804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2011009469
 GameObject:
   m_ObjectHideFlags: 0
@@ -617,6 +1051,15 @@ MonoBehaviour:
   unitSpeed: 600
   lineWidthPerHeight: 0.004
   minViewWidthForRoute: 1000
+  cam: {fileID: 0}
+  mouseDownPos: {x: 0, y: 0, z: 0}
+  path: []
+  pathDist: 0
+  line: {fileID: 0}
+  startMarker: {fileID: 0}
+  endMarker: {fileID: 0}
+  unit: {fileID: 0}
+  unitProgress: 0
 --- !u!4 &2011009471
 Transform:
   m_ObjectHideFlags: 0
@@ -669,7 +1112,11 @@ MonoBehaviour:
   highColor: {r: 0.72, g: 0.75, b: 0.8, a: 1}
   highColorAtHeight: 60
   colorJitter: 0.06
-  roofTint: {r: 0.9, g: 0.89, b: 0.87, a: 1}
+  roofBrightness: 0.82
+  roofVariation: 0.22
+  largeBuildingGrey: 0.35
+  oversizeAreaThreshold: 12000
+  siteColor: {r: 0.3, g: 0.32, b: 0.3, a: 1}
   litRatio: 0.703
   windowLitRatio: 0.8
   nightFadeSeconds: 0.5
@@ -702,3 +1149,11 @@ SceneRoots:
   - {fileID: 2011009471}
   - {fileID: 2137792598}
   - {fileID: 1140453618}
+  - {fileID: 388965056}
+  - {fileID: 1191541897}
+  - {fileID: 1853442415}
+  - {fileID: 1567645443}
+  - {fileID: 925681963}
+  - {fileID: 1944236806}
+  - {fileID: 864039892}
+  - {fileID: 1663835643}
